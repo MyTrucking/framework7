@@ -1,16 +1,16 @@
 /**
- * Framework7 1.7.1
+ * Framework7 1.7.2
  * Full featured mobile HTML framework for building iOS & Android apps
  * 
  * http://framework7.io/
  * 
- * Copyright 2018, Vladimir Kharlampidi
+ * Copyright 2021, Vladimir Kharlampidi
  * The iDangero.us
  * http://www.idangero.us/
  * 
  * Licensed under MIT
  * 
- * Released on: April 7, 2018
+ * Released on: September 7, 2021
  */
 window.Dom7 = (function () {
 'use strict';
@@ -1889,7 +1889,7 @@ function ajax(options) {
           responseData = JSON.parse(xhr.responseText);
           fireAjaxCallback('ajaxSuccess ajax:success', { xhr: xhr }, 'success', responseData, xhr.status, xhr);
         } catch (err) {
-          fireAjaxCallback('ajaxError ajax:error', { xhr: xhr, parseerror: true }, 'error', xhr, 'parseerror');
+          fireAjaxCallback('ajaxError ajax:error', { xhr: xhr, error: true }, 'error', xhr, err.message);
         }
       } else {
         responseData = xhr.responseType === 'text' || xhr.responseType === '' ? xhr.responseText : xhr.response;
@@ -8196,22 +8196,23 @@ return t7;
                         itemAfter.text(valueText.join(', '));
                     }
                 }
-        
-                $select.on('change', function () {
-                    var valueText = [];
-                    for (var i = 0; i < select.length; i++) {
-                        if (select[i].selected) {
-                            var displayAs = select[i].dataset ? select[i].dataset.displayAs : $(select[i]).data('display-as');
-                        	if (displayAs && typeof displayAs !== 'undefined') {
-        						valueText.push(displayAs);
-        					} else {
-        						valueText.push(select[i].textContent.trim());
-        					}
-        				}
+                if(!smartSelect.hasClass("smart-select-initialized")){
+                    $select.on('change', function () {
+                        var valueText = [];
+                        for (var i = 0; i < select.length; i++) {
+                            if (select[i].selected) {
+                                var displayAs = select[i].dataset ? select[i].dataset.displayAs : $(select[i]).data('display-as');
+                              if (displayAs && typeof displayAs !== 'undefined') {
+                        valueText.push(displayAs);
+                      } else {
+                        valueText.push(select[i].textContent.trim());
+                      }
                     }
-                    smartSelect.find('.item-after').text(valueText.join(', '));
-                });
-        
+                        }
+                        smartSelect.find('.item-after').text(valueText.join(', '));
+                    });
+                }
+                smartSelect.addClass("smart-select-initialized");
             });
         
         };
@@ -13454,7 +13455,7 @@ return t7;
                 var dayDate, currentValues = [], i, j, k,
                     rows = 6, cols = 7,
                     monthHTML = '',
-                    dayIndex = 0 + (p.params.firstDay - 1),
+                    dayIndex = 0 + ((p.params.firstDay - 8) % 7),
                     today = new Date().setHours(0,0,0,0),
                     minDate = p.params.minDate ? new Date(p.params.minDate).getTime() : null,
                     maxDate = p.params.maxDate ? new Date(p.params.maxDate).getTime() : null,
@@ -14435,7 +14436,12 @@ return t7;
         var ipad = ua.match(/(iPad).*OS\s([\d_]+)/);
         var ipod = ua.match(/(iPod)(.*OS\s([\d_]+))?/);
         var iphone = !ipad && ua.match(/(iPhone\sOS|iOS)\s([\d_]+)/);
-        var iphoneX = iphone && window.screen.width === 375 && window.screen.height === 812
+        var iphoneX = iphone && (
+                (window.screen.width === 375 && window.screen.height === 812) || // iPhone X, iPhone XS, iPhone 11 Pro
+                (window.screen.width === 414 && window.screen.height === 896) || // iPhone 11, iPhone 11 Pro Max
+                (window.screen.width === 390 && window.screen.height === 844)  || // iPhone 12, iPhone 12 Pro
+                (window.screen.width === 428 && window.screen.height === 926) // iPhone 12 Pro Max
+        );
     
         device.ios = device.android = device.windows = device.iphone = device.ipod = device.ipad = device.androidChrome = device.iphoneX = false;
     
